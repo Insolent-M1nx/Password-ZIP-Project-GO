@@ -1,0 +1,72 @@
+//Password Protected Zip Project Golang - Alex Mullins Code Based
+
+package main
+
+import (
+    "fmt"
+    "io"
+    "os"
+    "time"
+    "github.com/alexmullins/zip"
+)
+
+func main() {
+
+    // List of Files to Zip
+    files := []string{"collection.zip"}
+    output := "ouput.zip"
+
+    if err := ZipFiles(output, files); err != nil {
+        panic(err)
+    }
+    fmt.Println("Zipped File:", output)
+
+err := os.Rename("output.zip", "output2.zip")
+	if err != nil {
+		fmt.Println(err)
+	}
+fmt.Println("PAUSING...")
+time.Sleep(5 * time.Second)
+}
+
+// ZipFiles compresses one or many files into a single zip archive file.
+// Param 1: filename is the output zip file's name.
+// Param 2: files is a list of files to add to the zip.
+func ZipFiles(filename string, files []string) error {
+
+    newZipFile, err := os.Create(filename)
+    if err != nil {
+        return err
+    }
+    defer newZipFile.Close()
+
+    zipWriter := zip.NewWriter(newZipFile)
+    defer zipWriter.Close()
+
+    // Add files to zip
+    for _, file := range files {
+        if err = AddFileToZip(zipWriter, file); err != nil {
+            return err
+        }
+    }
+    return nil
+}
+
+func AddFileToZip(zipWriter *zip.Writer, filename string) error {
+
+    fileToZip, err := os.Open(filename)
+    if err != nil {
+        return err
+    }
+    defer fileToZip.Close()
+
+  w, err := zipWriter.Encrypt("collection.zip", "secret")
+  
+  if err != nil {
+    fmt.Println(err)
+ }
+ _, err = io.Copy(w, fileToZip)
+ if err != nil {
+return err	}
+return err
+}
